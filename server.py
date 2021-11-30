@@ -2,58 +2,62 @@ from flask import Flask, request
 from flask.helpers import send_from_directory
 import os
 import requests
+import json 
+import base64
 
 server = Flask(__name__)
-UPLOAD_DIRECTORY= os.getcwd()
+DIRECTORY= os.getcwd()
 
-class Server:
-    def __init__(self, precendent_address, next_address, my_addr):
-        self.prec_addr = precendent_address
-        self.next_addr = next_address
-        self.addr = my_addr
+certif = DIRECTORY + "/conf/client.crt"
+key = DIRECTORY + "/conf/client-key.key"
 
-    def send_packet(self, next_address, other_nodes_address, my_addr, final_addr):
-        data = {"nodes_urls": other_nodes_address,
-                "final_url": final_addr,
-                "sending_address": my_addr}
-        print("Sending ", data, " to ", next_address)
-        r = requests.post(next_address, json=data)
-        return r.content.decode()
-
-
-@server.route("/files/<path:path>") # send back toto.txt
+@server.route("/files/<path:path>")
 def get_file(path):
-    return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
+    return send_from_directory(DIRECTORY, path, as_attachment=True)
 
 
 @server.route("/", methods=["POST"])
 def server_sollicitation():  
     data = request.get_json()
-    nodes = data["nodes_urls"]
-    precedent = data["sending_address"]
-    final = data["final_url"]    
-    if nodes == []:
-        print("Out of Tor network")
-        r = requests.get(final)
-        print(r.content.decode())
+    to_server = data["to_server"]
+    if to_server:
+        addresses = data["send_addr"]
+        next_address, method, addr_list = get_next_address(addresses)
+        data["send_addr"] = addr_list
+        forward(next_address, method, data)
+        return "", 201
     else :
-        print("Forwarding ...")
-        next_address, address_list = get_next_address(nodes)
-        my_server = Server(precedent, next_address, my_address)
-        my_server.send_packet(next_address, address_list, my_address, final)
-    return "", 201
+        addresses = data["return_addr"]
+        next_address, method, addr_list = get_next_address(addresses)
+        data["return_addr"] = addr_list
+        forward(next_address, method, data)
+        return "", 201
 
-def forward(next_adress, other_nodes_address, final_address):
-    data = {"nodes_urls": other_nodes_address,
-            "final_url": final_address}
-    print("Sending ", data, " to ", next_adress)
-    r = requests.post(next_adress, json=data)
-    return r.content.decode()
+def get_next_address(addr_list):
+    next_addr = list(addr_list.keys())[0]
+    method = addr_list.pop(next_addr)
+    return next_addr, method, addr_list
 
-def get_next_address(addresses_list):
-    next_addr = addresses_list[0]
-    other_nodes = addresses_list[1:]
-    return next_addr, other_nodes
+def forward(next_addr, method, data):
+    if method == "post":
+        r = requests.post(next_addr, json=data)
+        return r.content.decode()
+    elif method == "get":
+        print("Last node")
+        r = requests.get(next_addr, stream=True)
+        data["to_server"] = False
+        data["response"] = base64.b64encode(r.content)
+        return send_back_response(data)
+
+def send_back_response(data):
+    addr_list = data["return_addr"]
+    next_addr = list(addr_list.keys())[0]
+    method = addr_list.pop(next_addr)
+    if method == "post":
+        r = requests.post(next_addr, json=data)
+        return r.content.decode()
+    else:
+        return "wallah c cho tu fais nimp frerrrr"
 
 if __name__ == "__main__":
     port = input("input port number : \n")
@@ -62,4 +66,4 @@ if __name__ == "__main__":
             host="0.0.0.0",
             port=port,
             threaded=True
-        )
+      )
