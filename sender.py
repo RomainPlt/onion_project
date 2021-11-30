@@ -5,19 +5,9 @@
 import requests
 from flask import Flask, request
 
+target_url = "https://assets.afcdn.com/story/20190220/1334066_w4912h2763c1cx2464cy1632cxt1084cyt0cxb4287cyb2983.jpg"
+number_node = 5
 my_url = "http://localhost:8080/"
-
-url1 = "http://localhost:8081/"
-url2 = "http://localhost:8082/"
-url3 = "http://localhost:8083/"
-url4 = "http://localhost:8084/"
-final_url = "http://localhost:8085/files/toto.txt"
-
-list_of_urls = [url2,url3,url4]
-
-data = {"nodes_urls": list_of_urls, 
-        "final_url": final_url,
-        "sending_address": my_url}
 
 def create_address_list(number_nodes):
     address_list = []
@@ -31,12 +21,17 @@ def create_dic_with_protocol(address_list):
         protocols[i] = "post"
     return protocols 
 
-
-
-def get_stuff(url):
-    print(list_of_urls)
-    r = requests.post(url, json=data, )
+def send_packet(url, data):
+    r = requests.post(url, json=data )
     print(r.content.decode())
+
+def main():
+    address_dic = create_dic_with_protocol(create_address_list(number_node))
+    address_dic[target_url] = "get"
+    print(address_dic)
+    next_addr = list(address_dic.keys())[0]
+    address_dic.pop(next_addr)
+    send_packet(next_addr, address_dic)
 
 
 client = Flask(__name__)
@@ -47,7 +42,7 @@ def get_response():
     print(data["response"])
 
 if __name__ == "__main__":
-    get_stuff(url1)
+    main()
     client.run(
             host="0.0.0.0",
             port=8080,
