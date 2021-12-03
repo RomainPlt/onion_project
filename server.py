@@ -5,11 +5,10 @@ import requests
 import json 
 import aesgcm
 import base64
+import simple_aes
 
 server = Flask(__name__)
 DIRECTORY= os.getcwd()
-
-my_server_key = "romainpialatmaisimaginecest256bitslol"
 
 
 @server.route("/files/<path:path>")
@@ -19,68 +18,51 @@ def get_file(path):
 
 @server.route("/", methods=["POST"])
 def server_sollicitation():  
-    data = request.get_json()
-    data = decrypt_data(data)
+    req = request.get_json()
+    print("Received !")
+    req, next_addr = get_address(req)
+    print("\n",next_addr)
+    post_data(next_addr, req)
+
+
+
+def get_address(req):
+    data = req["addr"]
+    data = base64.b64decode(data.encode()).decode()
     print(data)
-    to_server = data["to_server"]
-    if to_server:
-        addresses = data["send_addr"]
-        next_address, method, addr_list = get_next_address(addresses)
-        data["send_addr"] = addr_list
-        forward(next_address, method, data)
-        return "", 201
-    else :
-        addresses = data["return_addr"]
-        next_address, method, addr_list = get_next_address(addresses)
-        data["return_addr"] = addr_list
-        forward(next_address, method, data)
-        return "", 201
+    for i in range(len(data)):
+        addr = ""
+        if data[i] == "$" and data[i+1:i+5] == "http":
+            print("\nGoing for the post\n")
+            for j in range(i+1, len(data)):
+                if data[j] == "$":
+                    break
+                addr+=data[j]
+            data = data.replace(data[i:i+j], "")
+            req["addr"] = data
+            return req, addr
+        
+        elif data[i] == "$" and data[i+1:i+9] == "end_url+":
+            print("\nGoing for the get\n")
+            for j in range(i+9, len(data)):
+                if data[j] == "$":
+                    break
+                addr+=data[j]
+            data = data.replace(data[i:i+j], "")
+            req["addr"] = data
+            req["content"] = get_content(addr)
+            return get_address(req)
 
-def decrypt_data(data):
-    decrypted_data = {}
-    for i in data:
-        decrypted_tuple = {}
-        if i != 'to_server':
-            for j in data[i]:
-                dec_key = decrypt_message(j)
-                dec_value = decrypt_message(data[i][j])
-                decrypted_tuple[dec_key] = dec_value
-        elif i == 'to_server':
-            decrypted_tuple[i] = data[i]
-        decrypted_data[i] = decrypted_tuple
-    return decrypted_data
+def get_content(addr):
+    r = requests.get(addr, stream=True)
+    return base64.b64encode(r.content).decode()
 
-def decrypt_message(ciphertext):
-    key = my_server_key
-    ciphertext = eval(ciphertext)
-    res = aesgcm.main(ciphertext, key, False)
-    return res.decode()
+def post_data(addr, data):
+    print("posting to :", addr)
+    print(data)
+    r = requests.post(addr, json=data)
+    return r
 
-def get_next_address(addr_list):
-    next_addr = list(addr_list.keys())[0]
-    method = addr_list.pop(next_addr)
-    return next_addr, method, addr_list
-
-def forward(next_addr, method, data):
-    if method == "post":
-        r = requests.post(next_addr, json=data)
-        return r.content.decode()
-    elif method == "get":
-        print("Last node")
-        r = requests.get(next_addr, stream=True)
-        data["to_server"] = False
-        data["response"] = base64.b64encode(r.content)
-        return send_back_response(data)
-
-def send_back_response(data):
-    addr_list = data["return_addr"]
-    next_addr = list(addr_list.keys())[0]
-    method = addr_list.pop(next_addr)
-    if method == "post":
-        r = requests.post(next_addr, json=data)
-        return r.content.decode()
-    else:
-        return "wallah c cho tu fais nimp frerrrr"
 
 if __name__ == "__main__":
     port = input("input port number : \n")
