@@ -22,8 +22,8 @@ def server_sollicitation():
     print("Received !")
     req, next_addr = get_address(req)
     print("\n",next_addr)
-    post_data(next_addr, req)
-
+    return post_data(next_addr, req)
+    
 
 
 def get_address(req):
@@ -61,7 +61,7 @@ def post_data(addr, data):
     print("posting to :", addr)
     print(data)
     r = requests.post(addr, json=data)
-    return r
+    return "", 201
 
 
 if __name__ == "__main__":
