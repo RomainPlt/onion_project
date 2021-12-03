@@ -3,7 +3,6 @@ import hashlib
 import sys
 import binascii
 
-from sender import encrypt_message
 
 
 def encrypt(plaintext,key, mode):
