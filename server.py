@@ -9,11 +9,6 @@ server = Flask(__name__)
 DIRECTORY = os.getcwd()
 
 
-@server.route("/files/<path:path>")
-def get_file(path):
-    return send_from_directory(DIRECTORY, path, as_attachment=True)
-
-
 @server.route("/", methods=["POST"])
 def server_sollicitation():
     req = request.get_json()
