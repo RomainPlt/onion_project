@@ -19,6 +19,7 @@ def get_file(path):
 @server.route("/", methods=["POST"])
 def server_sollicitation():  
     req = request.get_json()
+    print(req)
     print("Received !")
     req, next_addr = get_address(req)
     print("\n",next_addr)
@@ -28,6 +29,7 @@ def server_sollicitation():
 
 def get_address(req):
     data = req["addr"]
+    data = simple_aes.decrypt(data, key)
     data = base64.b64decode(data.encode()).decode()
     print(data)
     for i in range(len(data)):
@@ -66,6 +68,7 @@ def post_data(addr, data):
 
 if __name__ == "__main__":
     port = input("input port number : \n")
+    key = input("What's the key ? \n")
     my_address = "http://localhost:" + port
     server.run(
             host="0.0.0.0",

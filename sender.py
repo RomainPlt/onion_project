@@ -5,6 +5,7 @@ import os
 import simple_aes_cipher
 import simple_aes
 import aesgcm
+import cryptography
 
 DIRECTORY= os.getcwd() 
 
@@ -14,6 +15,8 @@ number_node = 5
 my_url = "http://localhost:8080/"
 
 keys = ["key1", "key2", "key3", "key4", "key5"]
+
+
 send_addresses = ["http://localhost:8082","http://localhost:8083",
 "http://localhost:8084","http://localhost:8085"]
 next_addr = "http://localhost:8081"
@@ -27,9 +30,9 @@ addresses = send_addresses + return_addresses
 def encrypt_address(send_addresses, return_addresses):
     encrypt_addr = ""
     for i in range(len(return_addresses)-1, -1, -1):
-        encrypt_addr = encrypt_message(encrypt_addr + "$" + return_addresses[i] + "$")
+        encrypt_addr = encrypt_message((encrypt_addr + "$" + return_addresses[i] + "$"), keys[len(keys)-1 -i])
     for i in range(len(send_addresses)-1, -1, -1):
-        encrypt_addr = encrypt_message(encrypt_addr + "$"+send_addresses[i]+"$")
+        encrypt_addr = encrypt_message((encrypt_addr + "$"+send_addresses[i]+"$"), keys[i])
     return encrypt_addr
 
 def create_address_list(number_nodes):
@@ -46,10 +49,10 @@ def send_packet(url, data):
     print(data)
     requests.post(url, json=data)
 
-def encrypt_message(message):
+def encrypt_message(message, key):
     messageb64 = base64.b64encode(message.encode()).decode()
-    # ciphertext = simple_aes.encrypt(messageb64, key)
-    return messageb64
+    ciphertext = simple_aes.encrypt(messageb64, key)
+    return ciphertext
 
 def decrypt_message(ciphertext, key):
     plaintext = simple_aes.decrypt(ciphertext, key)
