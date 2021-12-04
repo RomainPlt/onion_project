@@ -13,7 +13,6 @@ def get_response():
     data = request.get_json()
     r = data["content"]
     r = base64.b64decode(r.encode())
-    print(r)
     with open(DOWNLOAD_DIRECTORY + "oignon.jpg", "wb") as f:
         f.write(r)
     return "", 201

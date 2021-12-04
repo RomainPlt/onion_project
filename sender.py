@@ -49,7 +49,7 @@ def encrypt_address(send_addresses, return_addresses):
 
 
 def send_packet(url, data):
-    print(data)
+    print("Sending !")
     requests.post(url, json=data)
 
 
