@@ -2,8 +2,6 @@ from flask import Flask, request
 from flask.helpers import send_from_directory
 import os
 import requests
-import json
-import aesgcm
 import base64
 import simple_aes
 
