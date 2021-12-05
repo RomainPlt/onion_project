@@ -1,0 +1,4 @@
+##### Required Packages #####
+flask
+pycrypto
+simple_aes_cipher
