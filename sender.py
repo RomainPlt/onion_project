@@ -50,12 +50,13 @@ def encrypt_address(send_addresses, return_addresses):
 
 def send_packet(url, data):
     print("Sending !")
+    print(len(data['addr']), len(data["content"]))
     requests.post(url, json=data)
 
 
 def encrypt_message(message, key):
-    messageb64 = base64.b64encode(message.encode()).decode()
-    ciphertext = simple_aes.encrypt(messageb64, key)
+    # messageb64 = base64.b64encode(message.encode()).decode()
+    ciphertext = simple_aes.encrypt(message, key)
     return ciphertext
 
 

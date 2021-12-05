@@ -11,8 +11,8 @@ client = Flask(__name__)
 @client.route("/", methods=["POST"])
 def get_response():
     data = request.get_json()
-    r = data["content"]
-    r = base64.b64decode(r.encode())
+    r = data["content"].encode()
+    # r = base64.b64decode(r.encode())
     with open(DOWNLOAD_DIRECTORY + "oignon.jpg", "wb") as f:
         f.write(r)
     return "", 201

@@ -20,7 +20,7 @@ def server_sollicitation():
 def get_address(req):
     data = req["addr"]
     data = simple_aes.decrypt(data, key)
-    data = base64.b64decode(data.encode()).decode()
+    # data = base64.b64decode(data.encode()).decode()
     for i in range(len(data)):
         addr = ""
         if data[i] == "$" and data[i + 1 : i + 5] == "http":
@@ -50,6 +50,7 @@ def get_content(addr):
 
 def post_data(addr, data):
     print("posting to :", addr)
+    print(len(data['addr']), len(data["content"]))
     r = requests.post(addr, json=data)
     return "", 201
 
