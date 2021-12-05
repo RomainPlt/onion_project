@@ -1,6 +1,12 @@
 # onion_project
 recreate onion routing and try to hack it
 
+## Setup python
+- Install required python packages
+```bash
+pip install -r requirements.txt
+```
+
 ## Get data out of wireshark
 
 - Save your wireshark session as **.pcap** inside your project directory
