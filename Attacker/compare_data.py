@@ -61,9 +61,10 @@ def main():
     http = keep_http(data)
     http = clean_http(http)
     http = drop_keys(http)
+    lengths = []
     for i in http:
-        a = get_frame_len(http[i])
-    return a
+        lengths.append(get_frame_len(http[i]))
+    return lengths
 
 
 if __name__ == "__main__":
