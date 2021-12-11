@@ -1,5 +1,5 @@
-##### Required Packages #####
-flask
-pycrypto
-simple_aes_cipher
-pandas
+Flask==1.1.1
+pandas==1.3.4
+pycryptodome==3.12.0
+requests==2.22.0
+Simple_AES_Cipher==1.0.7

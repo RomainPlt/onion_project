@@ -3,8 +3,7 @@ import compare_data
 
 table = pd.read_csv("dataframe.csv")
 number_router = input("How many routers ? ")
-entry_message_len = compare_data.main()[0]
-out_message_len = compare_data.main()[1]
+out_message_len = input("Data length ? ")
 
 
 def estimation(o_len, n_nodes):
