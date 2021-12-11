@@ -2,9 +2,6 @@
 Recreate onion routing and try to hack it.
 All servers are *Flask* servers.
 
-## Global principles
-
-
 ## Setup python
 * Install required python packages
 ```bash
